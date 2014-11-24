@@ -1,0 +1,220 @@
+NOTES:
+======
+    Symbols and keywords used in this documentation:
+
+    types:
+        bool    =>   true/false or 0/1
+        str     =>   string
+        int     =>   integer number
+        float   =>   double precision floating point number
+
+    relation:
+        |   =>   or
+
+    quantity:
+        ?   =>   0 or 1
+        *   =>   0 or more
+        +   =>   1 or more
+
+    reference:
+        &   =>   contains
+
+
+--------------------------------------------------------------------------------
+Generic:
+========
+    content types:
+        AUTO
+        PRIVATE
+        PUBLIC
+
+    user-privileges:
+        ADMIN
+            System administrator
+            read  : AUTO, PUBLIC, PRIVATE
+            write : AUTO, PUBLIC, PRIVATE
+
+        GROUP
+            Core-team member
+            read  : AUTO, PUBLIC, PRIVATE
+            write : PUBLIC, PRIVATE
+
+        GUEST
+            Registered visitor
+            read  : PUBLIC
+            write : PUBLIC
+
+        CROWD
+            Not registered visitor
+            read  : PUBLIC
+            write : -
+
+
+--------------------------------------------------------------------------------
+Atomic:
+=======
+    REFERENCE
+        type: str
+        info: internal linkage
+
+    LINK
+        type: str
+        info: external linkage
+
+    TEXT
+        type: str
+        info: any kind of text (except hyper-link)
+
+    FILE
+        type: str
+        info: path to internal file
+
+
+--------------------------------------------------------------------------------
+Blocks:
+=======
+
+    PARAGRAPH
+        & REFERENCE
+        & LINK
+        & TEXT
+
+    AUTHOR
+        & REFERENCE
+
+    TITLE
+        Title of anything
+        & TEXT
+
+    SUBTITLE
+        Subtitle of anything
+
+    AUDIO
+        & FILE | & LINK
+
+    IMAGE
+        & FILE | & LINK
+
+    VIDEO
+        & FILE | & LINK
+
+    MODEL
+        & FILE | & LINK
+
+    SCRIPT
+        & FILE | & LINK
+
+    ETC
+        & FILE | & LINK
+
+    CONTENT:
+    --------
+        TEXT
+            type: str
+            info:
+
+        QUOTE
+            type: str
+            info:
+
+        & FILE_BLOCKS
+
+    SECTION:
+    --------
+        & TITLE
+        & SUBTITLE
+            type: str
+            info: Sub-title of a section
+
+    FILES:
+    ------
+        & AUDIO
+        & IMAGE
+        & VIDEO
+        & MODEL
+        & SCRIPT
+        & ETC
+
+    BASE_BLOCKS:
+    ------------
+        NAME
+            type: str
+            info: Main Title
+
+        AUTHOR
+            type: str
+            info: author of the content
+
+        * CONTRIBUTORS
+            type: str
+            info: co-author of the content
+
+        ? LICENSE
+            type: str
+            info:
+
+        & SECTION
+
+        BODY       (str)
+        QUOTE      (str)
+        LICENSE    (str)
+        REFERENCES ()
+
+
+    SPEC_BLOCKS:
+    ------------
+        BUG  - (str) Documenting a malfunction
+        HACK - (str) We know this solution is not generic
+        TODO - (int, str) This should be done
+        NOTE - (str)
+        WARN - (str) If you do this, cute little kittens will die
+
+
+--------------------------------------------------------------------------------
+Dash Board:
+===========
+    ...
+
+Personal Page:
+==============
+    Each member has a personal page. This page contains references for all the
+    projects, discussions and comments the person is involved. These data are
+    generated automatically, as well as the activity graphs and tables. It also
+    contains personal informations (image, info, etc.) about the person.
+
+Main Page:
+==========
+    This is the index page of the wiki. Has "featured" article, general
+    informations about the wiki (number of pages, etc.), "welcome" and "about"
+    secttions as well.
+
+Proposal:
+=========
+
+    VOTE   (int, int)
+    LIKE   (int)
+    PUBLIC (bool)
+    ACTIVE (bool)
+
+    __contains__
+        BASE_BLOCKS
+
+Project Page:
+=============
+
+Tech Page:
+==========
+    __contains__
+        BASE_BLOCKS
+        SPEC_BLOCKS
+
+Discussion Page:
+================
+    Discussion page has "threads", and each thread has "comments". A thread can
+    be "linked" to anything on project or tech page it is linked to. Threads
+    could be closed.
+
+    PUBLIC (bool)
+
+
+
