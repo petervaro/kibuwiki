@@ -11,7 +11,7 @@ import os.path
 from migrate.versioning import api
 
 # Import kibuwiki modules
-from app import db
+from kibuwiki import database
 from config import SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO
 
 # Modules level constants
@@ -32,7 +32,7 @@ def main():
     script = api.make_update_script_for_model(SQLALCHEMY_DATABASE_URI,
                                               SQLALCHEMY_MIGRATE_REPO,
                                               temp_module.meta,
-                                              db.metadata)
+                                              database.metadata)
     # Write migration script to a file
     with open(migration, 'w') as file:
         file.write(script)

@@ -11,11 +11,11 @@ from migrate.versioning import api
 # Import kibuwiki modules
 from config import SQLALCHEMY_DATABASE_URI
 from config import SQLALCHEMY_MIGRATE_REPO
-from app import db
+from kibuwiki import database
 
 #------------------------------------------------------------------------------#
 def main():
-    db.create_all()
+    database.create_all()
     # If repo already exists
     if not os.path.exists(SQLALCHEMY_MIGRATE_REPO):
         api.create(SQLALCHEMY_MIGRATE_REPO, 'database repository')

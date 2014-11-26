@@ -3,16 +3,18 @@ NOTES:
     Symbols and keywords used in this documentation:
 
     types:
-        bool    =>   true/false or 0/1
-        str     =>   string
-        int     =>   integer number
-        float   =>   double precision floating point number
+        bool          =>   true/false or 0/1
+        str           =>   string
+        int           =>   integer number
+        float         =>   double precision floating point number
+        map<T1, T2>   =>   hash-table
+        list<T>       =>   list
 
     relation:
         |   =>   or
 
     quantity:
-        ?   =>   0 or 1
+        ?   =>   0 or 18
         *   =>   0 or more
         +   =>   1 or more
 
@@ -24,15 +26,17 @@ NOTES:
 Generic:
 ========
     content types:
-        AUTO
-        PRIVATE
-        PUBLIC
+        AUTO       =>   Automatically generated info
+        INTERNAL   =>   Internally stored value
+        PRIVATE    =>   Private data
+        PUBLIC     =>   Public data
+        INHERIT    =>   Inherits from parent
 
     user-privileges:
         ADMIN
             System administrator
-            read  : AUTO, PUBLIC, PRIVATE
-            write : AUTO, PUBLIC, PRIVATE
+            read  : AUTO, PUBLIC, PRIVATE, INTERNAL
+            write : AUTO, PUBLIC, PRIVATE, INTERNAL
 
         GROUP
             Core-team member
@@ -67,27 +71,46 @@ Atomic:
 
     FILE
         type: str
-        info: path to internal file
+        info: path (link) to internal file
 
+    VOTE
+        type: user_id:vote    map<int:INTERNAL, bool:INTERNAL>
+              up_vote_count   int:AUTO+INHERIT
+              down_vote_count int:AUTO+INHERIT
+        info: voting system with up and down vote counter, and it also registers
+              the voters (each user has one vote, which can be either up or
+              down). voting also has time-and-edit-lock: it can be changed
+              within 5 minutes starting from each editing. (eg. if a user up
+              voted a content, and the 5 minutes passed then the user cannot
+              remove his/her vote nor change it, unless the content is changing.
+              this behaviour is inspired by the stackoverflow vote interface.)
+
+    LIKE
+        type: user_id    list<int:INTERNAL>
+              like_count int:AUTO+INHERIT
+        info: liking system with like counter, whihc also registers the likers.
+              like does not have any kind of lock, a user can add or remove his
+              or her like at any time.
 
 --------------------------------------------------------------------------------
 Blocks:
 =======
 
     PARAGRAPH
-        & REFERENCE
-        & LINK
-        & TEXT
+        &* REFERENCE
+        &* LINK
+        &* TEXT
 
     AUTHOR
         & REFERENCE
 
     TITLE
-        Title of anything
+        info: Title of anything
         & TEXT
 
     SUBTITLE
-        Subtitle of anything
+        info: Subtitle of anything
+        & TEXT
 
     AUDIO
         & FILE | & LINK
@@ -109,9 +132,7 @@ Blocks:
 
     CONTENT:
     --------
-        TEXT
-            type: str
-            info:
+        & PARAGRAPH
 
         QUOTE
             type: str
@@ -181,6 +202,9 @@ Personal Page:
     projects, discussions and comments the person is involved. These data are
     generated automatically, as well as the activity graphs and tables. It also
     contains personal informations (image, info, etc.) about the person.
+
+    PERSONAL_INFO: PUBLIC
+    STATISTICS: PRIVATE
 
 Main Page:
 ==========

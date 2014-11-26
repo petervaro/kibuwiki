@@ -3,7 +3,7 @@
 ## INFO ##
 
 # Import kibuwiki modules
-from app import app
+from kibuwiki import app
 
 #------------------------------------------------------------------------------#
 def main():
