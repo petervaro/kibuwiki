@@ -28,6 +28,14 @@ Install tools:
       sqlalchemy-migrate flask-whooshalchemy flask-wtf flask-babel
       guess_language flipflop coverage
 
+On Mac OS X:
+
+    $ brew install pygit2
+
+On Arch Linux:
+
+    # sudo pacman -S python-pygit2
+
 Run the server:
 ---------------
 

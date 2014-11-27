@@ -1,28 +1,49 @@
 ## INFO ##
 ## INFO ##
 
+# FIXME: OpenID2.0 will not work with Google from April 20, 2015
+#        kibuwiki should use OpenID Connect instead. For more info:
+#        https://support.google.com/accounts/answer/6135882
+
 # Import flask modules
 from flask import render_template, flash, redirect, session, url_for, request, g
 from flask.ext.login import login_user, logout_user, current_user, login_required
 
 # Import kibuwiki modules
-from models import User
-from forms import LoginForm
+from kibuwiki.models import User
+from kibuwiki.forms import LoginForm
 from kibuwiki import app, database, login_manager, open_id
 
-# Module level constants
-FLASH = 'Login requested for OpenID={}, remember_me={}'
+#------------------------------------------------------------------------------#
+@login_manager.user_loader
+def load_user(id):
+    return User.query.get(int(id))
+
+
+#------------------------------------------------------------------------------#
+@app.before_request
+def before_request():
+    g.user = current_user
+
+
+#------------------------------------------------------------------------------#
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
+
 
 #------------------------------------------------------------------------------#
 @app.route('/')
 @app.route('/index')
+@login_required
 def index():
+    user = g.user
     # Fake data:
-    user = {'nickname':  'petervaro'}
     posts = [{'author': {'nickname': 'aliznagy'},
-              'body': 'this is my first test post'},
+              'body'  : 'this is my first test post'},
              {'author': {'nickname': 'laszlokiss'},
-              'body': 'aaaand this is the second one!'}]
+              'body'  : 'aaaand this is the second one!'}]
 
     return render_template('index.html',
                            title='home',
@@ -34,8 +55,10 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 @open_id.loginhandler
 def login():
+    # Get local reference
+    user = g.user
     # If user is already logged in
-    if g.user is not None and g.user.authenticated:
+    if user is not None and user.is_authenticated():
         return redirect(url_for('index'))
     # If user is not logged in
     form = LoginForm()
@@ -56,16 +79,18 @@ def after_login(response):
     # Get local reference
     email = response.email
     # If email is not valid
-    # TODO: clean up these conditionals => email and user => possible values?
+    # TODO: clean up these conditionals
+    #       => email, user and nickname => check for possible values?
     if not email: # email is None or email == '':
         flash('Invalid login. PLease try again.')
+        return redirect(url_for('login'))
     # Check if user is in database
     user = User.query.filter_by(email=email).first()
     # If not in database
     if not user: # user is None:
         # Register nickname
         nickname = response.nickname
-        if nickname is None or nickname == '':
+        if not nickname: # nickname is None or nickname == '':
             nickname, *rest = email.split('@')
         user = User(nickname=nickname, email=email)
         database.session.add(user)
@@ -86,6 +111,16 @@ def after_login(response):
 
 
 #------------------------------------------------------------------------------#
-@login_manager.user_loader
-def load_user(id):
-    return User.query.get(int(id))
+@app.route('/user/<nickname>')
+@login_required
+def user(nickname):
+    user = User.query.filter_by(nickname=nickname).first()
+    if not user:
+        flash('User {} not found.'.format(nickname))
+        return redirect(url_for('index'))
+    posts = [{'author': user, 'body': 'Test post #1'},
+             {'author': user, 'body': 'Test post #2'},
+             {'author': user, 'body': 'Test post #3'}]
+    return render_template('user.html',
+                           user=user,
+                           posts=posts)

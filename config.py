@@ -4,14 +4,15 @@
 # Import python modules
 import os.path
 
-_basedir = os.path.abspath(os.path.dirname(__file__))
 
 # Module level constants
+KIBUWIKI_BASEDIR = os.path.abspath(os.path.dirname(__file__))
+
 WTF_CSRF_ENABLED = True
 SECRET_KEY = 'zHaFVRMT'
 
-SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(_basedir, 'app.db')
-SQLALCHEMY_MIGRATE_REPO = os.path.join(_basedir, 'db_repository')
+SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(KIBUWIKI_BASEDIR, 'app.db')
+SQLALCHEMY_MIGRATE_REPO = os.path.join(KIBUWIKI_BASEDIR, 'db_repository')
 
 OPENID_PROVIDERS = [{'name': 'Google',
                      'url' : 'https://www.google.com/accounts/o8/id'},

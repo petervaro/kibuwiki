@@ -8,13 +8,12 @@ import os.path
 
 # Import flask modules
 from flask import Flask
-from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.openid import OpenID
 from flask.ext.login import LoginManager
+from flask.ext.sqlalchemy import SQLAlchemy
 
 # Import kibuwiki modules
-from config import basedir
-from kibuwiki import views, models
+from config import KIBUWIKI_BASEDIR
 
 #------------------------------------------------------------------------------#
 # Setup flask
@@ -24,7 +23,14 @@ app.config.from_object('config')
 # Create database
 database = SQLAlchemy(app)
 
-# Setup login and authentication
+# Setup login
 login_manager = LoginManager()
 login_manager.init_app(app)
-open_id = OpenID(app, os.path.join(basedir, 'tmp'))
+login_manager.login_view = 'login'
+
+# Setup authentication
+open_id = OpenID(app, os.path.join(KIBUWIKI_BASEDIR, 'tmp'))
+
+#------------------------------------------------------------------------------#
+# Import kibuwiki modules
+from kibuwiki import views, models
