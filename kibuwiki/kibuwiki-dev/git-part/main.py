@@ -42,10 +42,16 @@ def warning(text):
 def note(text):
     return CYAN + text + NULL
 
+#------------------------------------------------------------------------------#
+def comment(text):
+    return GRAY + '### ' + text + NULL
+
 
 #------------------------------------------------------------------------------#
 CTRL = command('\n==> ')
 LINE = note('... ')
+
+EMPTY = note('There are no pages saved yet')
 
 
 #------------------------------------------------------------------------------#
@@ -54,25 +60,27 @@ class TestApp:
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def __init__(self):
         # Available options
-        options = [('h', 'help'  ),
-                   ('?', 'status'),
-                   ('n', 'new'   ),
-                   ('o', 'open'  ),
-                   ('c', 'close' ),
-                   ('r', 'read'  ),
-                   ('e', 'edit'  ),
-                   ('s', 'save'  ),
-                   ('d', 'delete'),
-                   ('b', 'browse'),
-                   ('a', 'attach'),
-                   ('w', 'write' ),
-                   ('q', 'quit'  ),]
+        options = [('h', 'help'   ),
+                   ('v', 'verbose'),
+                   ('?', 'status' ),
+                   ('n', 'new'    ),
+                   ('o', 'open'   ),
+                   ('c', 'close'  ),
+                   ('r', 'read'   ),
+                   ('e', 'edit'   ),
+                   ('s', 'save'   ),
+                   ('d', 'delete' ),
+                   ('b', 'browse' ),
+                   ('a', 'attach' ),
+                   ('w', 'write'  ),
+                   ('q', 'quit'   ),]
 
         text = 'OPTIONS: '
         self._help = note(text + ('\n' + ' '*len(text)).join('{} -> {}'.format(*o) for o in options))
         self._options = OrderedDict((c, getattr(self, n)) for c, n in options)
 
         # States
+        self._verbose      = False
         self._open_page    = None
         self._open_section = None
 
@@ -103,8 +111,17 @@ class TestApp:
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def verbose(self):
+        self._verbose = not self._verbose
+        print(note('verbose -> {}'.format('ON' if self._verbose else 'OFF')))
+
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def quit(self):
         print(command('Write files?'))
+        if self._verbose:
+            print(comment('Any   -> Write changes to files'),
+                  comment('Empty -> Do not write changes to files'), sep='\n')
         if input(LINE):
             self.write()
         exit()
@@ -136,47 +153,70 @@ class TestApp:
             section = self._open_section
             print(note('\n'.join('{: 4} -> {!r}'.format(*p) for p in enumerate(section))))
             print(command('\nEdit paragraph?'))
+            if self._verbose:
+                print(comment('Index -> Choose a paragraph by its index'),
+                      comment('Empty -> Cancel editing'), sep='\n')
             try:
-                index = int(input(LINE))
+                line  = input(LINE)
+                index = int(line)
                 section[index]
                 print(command('New paragraph?'))
+                if self._verbose:
+                    print(comment('Text that will replace existing paragraph'))
                 section[index] = input(LINE)
             except (IndexError, ValueError):
-                print(warning('Invalid paragraph index'))
+                if line:
+                    print(warning('Invalid paragraph index'))
 
         # If a page is open
         elif self._open_page:
             page = self._open_page
             print(note('\n'.join('{: 4} -> {.title!r}'.format(*s) for s in enumerate(page))))
             print(command('\nEdit section?'))
+            if self._verbose:
+                print(comment('Index -> Choose a section by its index'),
+                      comment('Empty -> Cancel editing'), sep='\n')
             try:
-                index = int(input(LINE))
+                line  = input(LINE)
+                index = int(line)
                 page[index]
                 print(command('Section title?'))
+                if self._verbose:
+                    print(comment('Text that will replace existing section title'))
                 page[index].title = input(LINE)
             except (IndexError, ValueError):
-                print(warning('Invalid section index'))
+                if line:
+                    print(warning('Invalid section index'))
 
         # If nothing is open but there are saved documents
         elif len(self._documents):
             self.browse()
             print(command('\nEdit page?'))
+            if self._verbose:
+                print(comment('Index -> Choose a page by its identifier'),
+                      comment('Empty -> Cancel editing'), sep='\n')
             try:
                 page_id = input(LINE)
                 self._documents[page_id]
                 print(command('Page title?'))
+                if self._verbose:
+                    print(comment('Text that will replace existing page title'))
                 self._documents[page_id].title = input(LINE)
             except KeyError:
-                print(warning('Invalid page identifier'))
+                if page_id:
+                    print(warning('Invalid page identifier'))
 
         # If nothing is open and there aren't any documents
         else:
-            print(note('Documents are empty'))
+            print(EMPTY)
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def browse(self):
-        print(note('\n'.join('{} -> {.title!r}'.format(*p) for p in sorted(self._documents.items()))))
+        if self._documents:
+            print(note('\n'.join('{} -> {.title!r}'.format(*p) for p in self._documents.items())))
+        else:
+            print(EMPTY)
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
@@ -185,6 +225,9 @@ class TestApp:
         # If a section is open
         if self._open_section:
             print(command('New paragraphs?'))
+            if self._verbose:
+                print(comment('Any   -> Each line is a new paragraph'),
+                      comment('Empty -> Escape from editing'), sep='\n')
             line = input(LINE)
             # Read lines
             while line:
@@ -195,6 +238,9 @@ class TestApp:
         # If a page is open
         elif self._open_page:
             print(command('Section title?'))
+            if self._verbose:
+                print(comment('Any   -> New section title'),
+                      comment('Empty -> Escape from editing'), sep='\n')
             title = input(LINE)
             # Create a new section
             if title:
@@ -204,6 +250,9 @@ class TestApp:
         # If nothing is open
         else:
             print(command('Page title?'))
+            if self._verbose:
+                print(comment('Any   -> New page title'),
+                      comment('Empty -> Escape from editing'), sep='\n')
             title = input(LINE)
             # Create a new page
             if title:
@@ -255,27 +304,37 @@ class TestApp:
         elif self._open_page:
             print(note('\n'.join('{: 4} -> {.title}'.format(*s) for s in enumerate(self._open_page))))
             print(command('\nOpen section?'))
+            if self._verbose:
+                print(comment('Index -> Choose a section by its index'),
+                      comment('Empty -> Cancel opening'), sep='\n')
             try:
-                self._open_section = self._open_page[int(input(LINE))]
+                line = input(LINE)
+                self._open_section = self._open_page[int(line)]
                 print(note('Section {!r} is open'.format(self._open_section.title)))
             except (IndexError, ValueError):
-                print(warning('No such section in page'))
+                if line:
+                    print(warning('No such section in page'))
 
         # If nothing is open but there are saved documents
         elif len(self._documents):
             self.browse()
             print(command('\nOpen page?'))
+            if self._verbose:
+                print(comment('Index -> Choose a page by its identifier'),
+                      comment('Empty -> Cancel opening'), sep='\n')
             # Open page if valid ID
             try:
-                self._open_page = self._documents[input(LINE)]
+                line = input(LINE)
+                self._open_page = self._documents[line]
                 print(note('Page {!r} is open'.format(self._open_page.title)))
             # If ID is not valid
             except KeyError:
-                print(warning('No such page in documents'))
+                if line:
+                    print(warning('No such page in documents'))
 
         # If nothing is open and there aren't any documents
         else:
-            print(note('Documents are empty'))
+            print(EMPTY)
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
@@ -288,7 +347,7 @@ class TestApp:
             self._documents[str(page_id)] = page
             print(note('Saved: {!r} -> {}'.format(page.title, page_id)))
         else:
-            print(note('Nothing is open, therefore nothing is saved'))
+            print(note('Nothing to save'))
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
@@ -298,36 +357,51 @@ class TestApp:
             section = self._open_section
             print(note('\n'.join('{: 4} -> {!r}'.format(*p) for p in enumerate(section))))
             print(command('\nDelete paragraph?'))
+            if self._verbose:
+                print(comment('Index -> Choose a paragraph by its index'),
+                      comment('Empty -> Cancel deleting'), sep='\n')
             try:
-                del section[int(input(LINE))]
+                line = input(LINE)
+                del section[int(line)]
                 print(note('Paragraph removed'))
             except (IndexError, ValueError):
-                print(warning('Invalid paragraph index'))
+                if line:
+                    print(warning('Invalid paragraph index'))
 
         # If a page is open
         elif self._open_page:
             page = self._open_page
             print(note('\n'.join('{: 4} -> {.title!r}'.format(*s) for s in enumerate(page))))
             print(command('\nDelete section?'))
+            if self._verbose:
+                print(comment('Index -> Choose a section by its index'),
+                      comment('Empty -> Cancel deleting'), sep='\n')
             try:
-                del page[int(input(LINE))]
+                line = input(LINE)
+                del page[int(line)]
                 print(note('Section removed'))
             except (IndexError, ValueError):
-                print(warning('Invalid section index'))
+                if line:
+                    print(warning('Invalid section index'))
 
         # If nothing is open but there are saved documents
         elif len(self._documents):
             self.browse()
             print(command('\nDelete page?'))
+            if self._verbose:
+                print(comment('Index -> Choose a page by its identifier'),
+                      comment('Empty -> Cancel deleting'), sep='\n')
             try:
-                del self._documents[input(LINE)]
+                line = input(LINE)
+                del self._documents[line]
                 print(note('Page removed'))
             except KeyError:
-                print(warning('Invalid page identifier'))
+                if line:
+                    print(warning('Invalid page identifier'))
 
         # If nothing is open and there aren't any documents
         else:
-            print(note('Documents are empty'))
+            print(EMPTY)
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
