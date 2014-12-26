@@ -52,10 +52,54 @@ CTRL = command('\n==> ')
 LINE = note('... ')
 
 EMPTY = note('There are no pages saved yet')
+MISSING = warning('This feature is not implemented yet')
 
 
 #------------------------------------------------------------------------------#
 class TestApp:
+
+    """
+    TestApp is for testing editing and modifying buffers and writing them out to
+    the git-repositories. It is based on a very simple finite-state machine.
+
+    First time users should toggle to verbose mode with the 'v' (verbose)
+    control option. The verbose mode provides extra hints before each command.
+    This could be toggled back anytime.
+
+    TestApp is providing a container for the documents. On start-up is empty,
+    but it can be filled by 1) creating new documents 2) loading existing ones
+    with the 'l' (load) control option.
+
+    Because TestApp is a FSM, teh user has to switch between the states/layers.
+    There are three main layers in TestApp: Void, Page and Section. One can
+    check which layer one is using with the '?' (status) control option.
+
+    'Void' layer is, when nothing is open/selected. One can create new pages
+    with the 'n' (new) control option, edit their titles with the 'e' (edit)
+    control option or completely remove them with the 'd' (delete) control
+    option.
+
+    'Page' layer is when a single page has been selected. The user can create
+    new sections with the 'n' (new) control option, edit their titles with the
+    'e' (edit) control option, completely remove them with the 'd' (delete)
+    control option or can return to the 'Void' layer with the 'c' (close)
+    control option.
+
+    'Section' layer is when a single page's single section has been selected.
+    The user can create new paragraphs with the 'n' (new) control option, edit
+    paragraphs with the 'e' (edit) control option, completely remove
+    paragraphs with the 'd' (delete) control option or can return to the 'Page'
+    layer with the 'c' (close) control option.
+
+    By closing an open page, it will be truncated by default unless the 's'
+    (save) control option was passed anytime before the page was closed.
+
+    The 's' (save) control option will only save the currently open/selected
+    page into the container of documents. Once the user quits from TestApp, the
+    container of documents will be destroyed. Therefore one can use the 'w'
+    (write) control option to save changes to the file-system of every document
+    of the container of the documents.
+    """
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def __init__(self):
@@ -72,6 +116,7 @@ class TestApp:
                    ('d', 'delete' ),
                    ('b', 'browse' ),
                    ('a', 'attach' ),
+                   ('l', 'load'   ),
                    ('w', 'write'  ),
                    ('q', 'quit'   ),]
 
@@ -113,7 +158,7 @@ class TestApp:
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def verbose(self):
         self._verbose = not self._verbose
-        print(note('verbose -> {}'.format('ON' if self._verbose else 'OFF')))
+        print(note('verbose -> {!r}'.format('ON' if self._verbose else 'OFF')))
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
@@ -143,7 +188,12 @@ class TestApp:
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def attach(self):
-        pass
+        print(MISSING)
+
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def load(self):
+        print(MISSING)
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
@@ -406,7 +456,7 @@ class TestApp:
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def write(self):
-        pass
+        print(MISSING)
 
 
 
